@@ -27,7 +27,7 @@ import <%= `import` %>
     let paramValues = serviceProvider.findParameterValues(for: service)
 
     return """
-    { resolver\(prefixNonEmpty(concatParamNames(of: paramValues.runtimeParameters()), with: ", ")) in
+    { (resolver\(prefixNonEmpty(stringify(parameters: paramValues.runtimeParameters(), printing: .definition), with: ", "))) in
             \(service.registerTypeName)(\(concat(parametersWithValue(paramValues))))
         }
     """
@@ -44,9 +44,9 @@ import <%= `import` %>
       }
 
       return """
-        .initCompleted { service, resolver in
-            \(variables.joined(separator: "\n       "))
-        }
+      .initCompleted { service, resolver in
+          \(variables.joined(separator: "\n       "))
+      }
       """
     }
     catch {
@@ -69,13 +69,13 @@ import <%= `import` %>
 class AnnotationAssembly: Assembly {
   func assemble(container: Container) {
   <%_ for service in ServiceProvider(types: types).findAnnotatedServices() { -%>
-    container.register(<%= service.factory.returnTypeName %>.self, factory: <%= factory(with: service) -%>)
+    container.register(<%= service.resolvedTypeName %>.self, name: <%= service.name %>, factory: <%= factory(with: service) -%>)
     <%= serviceOptions(service).compactMap { $0 }.joined(separator: "\n") _%>
   <%_ } -%>
 
   <%_ for service in ServiceProvider(types: types).findFactoryServices() { -%>
     <%_ let method = service.factory -%>
-    container.register(<%= method.returnTypeName %>.self, factory: <%= method.definedInTypeName?.name ?? "" %>.<%= method.selectorName %>)
+    container.register(<%= service.resolvedTypeName %>.self, name: <%= service.name %>, factory: <%= method.definedInTypeName?.name ?? "" %>.<%= method.selectorName %>)
   <%_ } -%>
   }
 }

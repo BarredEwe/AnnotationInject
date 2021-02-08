@@ -1,5 +1,3 @@
-import Foundation
-import Swinject
 <%_ 
     let imports: [String]!
 
@@ -29,7 +27,7 @@ extension ServiceResolver {
     <%_ let parameters = serviceProvider.findParameterValues(for: service).runtimeParameters() -%>
 
     func <%= service.functionName %>(<%= stringify(parameters: parameters, printing: .definition) %>) -> <%= service.resolvedTypeName %> {
-        return resolve(<%= method.returnTypeName %>.self<%= prefixNonEmpty(concatParamNames(of: parameters), with: ", arguments: ") %>)!
+        return resolve(<%= service.resolvedTypeName %>.self, name: <%= service.name %><%= prefixNonEmpty(concatParamNames(of: parameters), with: ", arguments: ") %>)!
     }
 <%_ } -%>
 
@@ -38,13 +36,13 @@ extension ServiceResolver {
     <%_ let parameters = Array(serviceProvider.findParameterValues(for: service).runtimeParameters().dropFirst()) -%>
 
     func <%= service.functionName %>(<%= stringify(parameters: parameters, printing: .definition) %>) -> <%= service.resolvedTypeName %> {
-        return resolve(<%= method.returnTypeName %>.self<%= prefixNonEmpty(concatParamNames(of: parameters), with: ", arguments: ") %>)!
+        return resolve(<%= service.resolvedTypeName %>.self, name: <%= service.name %><%= prefixNonEmpty(concatParamNames(of: parameters), with: ", arguments: ") %>)!
     }
 <%_ } -%>
 }
 
 extension Resolver {
-  public func resolve<T, U1>(_ serviceType: T.Type, arguments: U1) -> T? {
-    return resolve(serviceType, argument: arguments)
+  public func resolve<T, U1>(_ serviceType: T.Type, name: String? = nil, arguments: U1) -> T? {
+    return resolve(serviceType, name: name, argument: arguments)
   }
 }
